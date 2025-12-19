@@ -1,4 +1,5 @@
 {
+  "name": "docs",
   "devDependencies": {
     "autoprefixer": "^10.4.22",
     "daisyui": "^4.12.24",
@@ -7,8 +8,9 @@
     "vitepress": "^1.6.4"
   },
   "scripts": {
-    "format": "npm run lint ; npm run format:prettier",
+    "format": "pnpm run lint ; pnpm run format:prettier",
     "format:prettier": "prettier --write .",
+    "build": "pnpm docs:build",
     "lint": "eslint . --fix",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
