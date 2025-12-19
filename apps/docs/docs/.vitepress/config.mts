@@ -1,7 +1,11 @@
+import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vitepress';
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
+  vite: {
+    plugins: [tailwindcss()],
+  },
   lang: 'en-US',
   title: 'Tone Share',
   description: 'Share URL/File by Tone in LAN(Local Audio Network)',
