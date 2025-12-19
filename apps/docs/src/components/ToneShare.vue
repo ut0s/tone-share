@@ -252,32 +252,34 @@ const toggleReceiving = async () => {
           class="badge"
           :class="isReceiving ? 'badge-success' : 'badge-ghost'"
         >
-          {{ isReceiving ? '受信中' : '停止中' }}
+          {{ isReceiving ? t('badge_receiving') : t('badge_stopped') }}
         </span>
         <span class="badge" :class="isSending ? 'badge-info' : 'badge-ghost'">
-          {{ isSending ? '送信中' : '待機' }}
+          {{ isSending ? t('badge_sending') : t('badge_standby') }}
         </span>
         <span class="opacity-70">{{ statusText }}</span>
       </div>
       <div v-if="needsGesture" class="alert alert-warning text-sm">
-        音声の再生/録音を開始するには、ボタン操作が必要な場合があります。
+        {{ t('gesture_warning') }}
       </div>
       <div v-if="errorMessage" class="text-sm text-error">
         {{ errorMessage }}
       </div>
 
-      <label class="text-sm font-medium" for="message">送信メッセージ</label>
+      <label class="text-sm font-medium" for="message">{{
+        t('label_send_message')
+      }}</label>
       <input
         id="message"
         v-model="message"
         class="input input-bordered"
-        placeholder="テキストを入力"
+        :placeholder="t('placeholder_message')"
       />
 
       <div class="flex items-center gap-3">
-        <label for="txProtocol" class="text-sm whitespace-nowrap"
-          >プロトコル</label
-        >
+        <label for="txProtocol" class="text-sm whitespace-nowrap">{{
+          t('label_protocol')
+        }}</label>
         <select
           id="txProtocol"
           v-model="txProtocolKey"
@@ -295,7 +297,9 @@ const toggleReceiving = async () => {
       </div>
 
       <div class="flex items-center gap-3">
-        <label for="txVolume" class="text-sm whitespace-nowrap">音量</label>
+        <label for="txVolume" class="text-sm whitespace-nowrap">{{
+          t('label_volume')
+        }}</label>
         <input
           id="txVolume"
           v-model.number="txVolume"
@@ -314,19 +318,23 @@ const toggleReceiving = async () => {
           :disabled="isSending"
           @click="sendMessage"
         >
-          再生して送信
+          {{ t('button_play_and_send') }}
         </button>
         <button
           class="btn"
           :class="isReceiving ? 'btn-warning' : 'btn-secondary'"
           @click="toggleReceiving"
         >
-          {{ isReceiving ? '受信停止' : '受信開始' }}
+          {{
+            isReceiving
+              ? t('button_stop_receiving')
+              : t('button_start_receiving')
+          }}
         </button>
       </div>
 
       <div class="flex items-center gap-3 text-sm">
-        <span class="whitespace-nowrap">入力レベル</span>
+        <span class="whitespace-nowrap">{{ t('label_input_level') }}</span>
         <progress
           class="progress progress-accent w-full"
           :value="inputLevel"
@@ -339,9 +347,11 @@ const toggleReceiving = async () => {
     </div>
 
     <div class="flex flex-col gap-2 max-w-xl">
-      <h3 class="text-base font-semibold">受信ログ</h3>
+      <h3 class="text-base font-semibold">
+        {{ t('heading_receive_log') }}
+      </h3>
       <div v-if="decodedMessages.length === 0" class="text-sm opacity-70">
-        まだ受信していません
+        {{ t('text_not_received_yet') }}
       </div>
       <ul v-else class="menu bg-base-100 rounded-box border border-base-300">
         <li v-for="(m, i) in decodedMessages" :key="i">
