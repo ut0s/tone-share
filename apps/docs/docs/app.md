@@ -3,6 +3,3 @@ layout: doc
 ---
 
 # Web App
-
-
-

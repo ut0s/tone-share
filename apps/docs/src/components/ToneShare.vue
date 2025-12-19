@@ -1,25 +1,26 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from "vue";
-import { useUiI18n } from "../composables/useUiI18n";
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 
-const message = ref("hello ggwave");
+import { useUiI18n } from '../composables/useUiI18n';
+
+const message = ref('hello ggwave');
 const decodedMessages = ref<string[]>([]);
 const isSending = ref(false);
 const isReceiving = ref(false);
 const { t } = useUiI18n();
-const statusText = ref(t("status_loading"));
-const errorMessage = ref("");
+const statusText = ref(t('status_loading'));
+const errorMessage = ref('');
 const inputLevel = ref(0);
 const needsGesture = ref(false);
 const txVolume = ref(10);
 const txProtocolKey = ref<
-  | "GGWAVE_PROTOCOL_AUDIBLE_NORMAL"
-  | "GGWAVE_PROTOCOL_AUDIBLE_FAST"
-  | "GGWAVE_PROTOCOL_AUDIBLE_FASTEST"
-  | "GGWAVE_PROTOCOL_ULTRASOUND_NORMAL"
-  | "GGWAVE_PROTOCOL_ULTRASOUND_FAST"
-  | "GGWAVE_PROTOCOL_ULTRASOUND_FASTEST"
->("GGWAVE_PROTOCOL_AUDIBLE_NORMAL");
+  | 'GGWAVE_PROTOCOL_AUDIBLE_NORMAL'
+  | 'GGWAVE_PROTOCOL_AUDIBLE_FAST'
+  | 'GGWAVE_PROTOCOL_AUDIBLE_FASTEST'
+  | 'GGWAVE_PROTOCOL_ULTRASOUND_NORMAL'
+  | 'GGWAVE_PROTOCOL_ULTRASOUND_FAST'
+  | 'GGWAVE_PROTOCOL_ULTRASOUND_FASTEST'
+>('GGWAVE_PROTOCOL_AUDIBLE_NORMAL');
 
 let audioContext: AudioContext | null = null;
 let ggwaveModule: any = null;
@@ -43,8 +44,9 @@ const toFloat32Samples = (src: Int8Array): Float32Array => {
 };
 
 const getAudioContextCtor = (): typeof AudioContext | null => {
-  if (typeof window === "undefined") return null;
-  return ((window as any).AudioContext || (window as any).webkitAudioContext) as
+  if (typeof window === 'undefined') return null;
+  return ((window as any).AudioContext ||
+    (window as any).webkitAudioContext) as
     | typeof AudioContext
     | undefined
     | null;
@@ -53,14 +55,14 @@ const getAudioContextCtor = (): typeof AudioContext | null => {
 const ensureAudioContext = async () => {
   if (!audioContext) {
     const AudioCtx = getAudioContextCtor();
-    if (!AudioCtx) throw new Error(t("error_audio_context_unavailable"));
+    if (!AudioCtx) throw new Error(t('error_audio_context_unavailable'));
     try {
       audioContext = new AudioCtx({ sampleRate: 48000 } as any);
     } catch {
       audioContext = new AudioCtx();
     }
   }
-  if (audioContext.state === "suspended") {
+  if (audioContext.state === 'suspended') {
     try {
       await audioContext.resume();
       needsGesture.value = false;
@@ -77,22 +79,25 @@ const loadGGWave = async () => {
   if (ggwaveModule && ggwaveInstance) return;
   try {
     // ggwave provides a factory function as the default export.
-    const factoryModule: any = await import("ggwave");
+    const factoryModule: any = await import('ggwave');
     const factory = factoryModule.default || factoryModule;
     ggwaveModule = await factory();
 
     const ctx = await ensureAudioContext();
     const params = ggwaveModule.getDefaultParameters();
     // Align sample rates with the current AudioContext when possible.
-    if (typeof params.sampleRateInp === "number") params.sampleRateInp = ctx.sampleRate;
-    if (typeof params.sampleRateOut === "number") params.sampleRateOut = ctx.sampleRate;
-    if (typeof params.sampleRate === "number") params.sampleRate = ctx.sampleRate;
+    if (typeof params.sampleRateInp === 'number')
+      params.sampleRateInp = ctx.sampleRate;
+    if (typeof params.sampleRateOut === 'number')
+      params.sampleRateOut = ctx.sampleRate;
+    if (typeof params.sampleRate === 'number')
+      params.sampleRate = ctx.sampleRate;
 
     ggwaveInstance = ggwaveModule.init(params);
-    statusText.value = t("status_ready");
+    statusText.value = t('status_ready');
   } catch (err: any) {
-    errorMessage.value = err?.message || t("error_ggwave_load_failed");
-    statusText.value = t("error_ggwave_load_failed");
+    errorMessage.value = err?.message || t('error_ggwave_load_failed');
+    statusText.value = t('error_ggwave_load_failed');
     throw err;
   }
 };
@@ -120,37 +125,6 @@ const playWaveform = async (waveform: Int8Array) => {
   });
 };
 
-const sendMessage = async () => {
-  if (isSending.value) return;
-  const payload = message.value.trim();
-  if (!payload) return;
-  errorMessage.value = "";
-  needsGesture.value = false;
-  try {
-    isSending.value = true;
-    await loadGGWave();
-    const wasReceiving = isReceiving.value;
-    if (wasReceiving) await stopReceiving();
-    const protocolId = ggwaveModule.ProtocolId[txProtocolKey.value];
-    const waveform: Int8Array = ggwaveModule.encode(
-      ggwaveInstance,
-      payload,
-      protocolId,
-      txVolume.value,
-    );
-    await playWaveform(waveform);
-    if (wasReceiving) {
-      await startReceiving();
-    }
-    statusText.value =
-      t("status_send_done_prefix") + payload + t("status_send_done_suffix");
-  } catch (err: any) {
-    errorMessage.value = err?.message || t("error_send_failed");
-  } finally {
-    isSending.value = false;
-  }
-};
-
 const stopReceiving = async () => {
   if (processor) {
     processor.disconnect();
@@ -171,7 +145,7 @@ const stopReceiving = async () => {
 
 const startReceiving = async () => {
   if (isReceiving.value) return;
-  errorMessage.value = "";
+  errorMessage.value = '';
   needsGesture.value = false;
   await loadGGWave();
 
@@ -206,10 +180,41 @@ const startReceiving = async () => {
     processor.connect(silentGain);
     silentGain.connect(ctx.destination);
     isReceiving.value = true;
-    statusText.value = t("status_receiving");
+    statusText.value = t('status_receiving');
   } catch (err: any) {
-    errorMessage.value = err?.message || t("error_mic_failed");
+    errorMessage.value = err?.message || t('error_mic_failed');
     await stopReceiving();
+  }
+};
+
+const sendMessage = async () => {
+  if (isSending.value) return;
+  const payload = message.value.trim();
+  if (!payload) return;
+  errorMessage.value = '';
+  needsGesture.value = false;
+  try {
+    isSending.value = true;
+    await loadGGWave();
+    const wasReceiving = isReceiving.value;
+    if (wasReceiving) await stopReceiving();
+    const protocolId = ggwaveModule.ProtocolId[txProtocolKey.value];
+    const waveform: Int8Array = ggwaveModule.encode(
+      ggwaveInstance,
+      payload,
+      protocolId,
+      txVolume.value,
+    );
+    await playWaveform(waveform);
+    if (wasReceiving) {
+      await startReceiving();
+    }
+    statusText.value =
+      t('status_send_done_prefix') + payload + t('status_send_done_suffix');
+  } catch (err: any) {
+    errorMessage.value = err?.message || t('error_send_failed');
+  } finally {
+    isSending.value = false;
   }
 };
 
@@ -232,7 +237,7 @@ onBeforeUnmount(() => {
 const toggleReceiving = async () => {
   if (isReceiving.value) {
     await stopReceiving();
-    statusText.value = t("status_stopped");
+    statusText.value = t('status_stopped');
     return;
   }
   await startReceiving();
@@ -243,32 +248,45 @@ const toggleReceiving = async () => {
   <div class="flex flex-col gap-6">
     <div class="flex flex-col gap-3 max-w-xl">
       <div class="flex items-center gap-2 text-sm">
-        <span class="badge" :class="isReceiving ? 'badge-success' : 'badge-ghost'">
-          {{ isReceiving ? "受信中" : "停止中" }}
+        <span
+          class="badge"
+          :class="isReceiving ? 'badge-success' : 'badge-ghost'"
+        >
+          {{ isReceiving ? '受信中' : '停止中' }}
         </span>
         <span class="badge" :class="isSending ? 'badge-info' : 'badge-ghost'">
-          {{ isSending ? "送信中" : "待機" }}
+          {{ isSending ? '送信中' : '待機' }}
         </span>
         <span class="opacity-70">{{ statusText }}</span>
       </div>
       <div v-if="needsGesture" class="alert alert-warning text-sm">
         音声の再生/録音を開始するには、ボタン操作が必要な場合があります。
       </div>
-      <div class="text-sm text-error" v-if="errorMessage">{{ errorMessage }}</div>
+      <div v-if="errorMessage" class="text-sm text-error">
+        {{ errorMessage }}
+      </div>
 
       <label class="text-sm font-medium" for="message">送信メッセージ</label>
       <input
         id="message"
-        class="input input-bordered"
         v-model="message"
+        class="input input-bordered"
         placeholder="テキストを入力"
       />
 
       <div class="flex items-center gap-3">
-        <label for="txProtocol" class="text-sm whitespace-nowrap">プロトコル</label>
-        <select id="txProtocol" class="select select-bordered w-full" v-model="txProtocolKey">
+        <label for="txProtocol" class="text-sm whitespace-nowrap"
+          >プロトコル</label
+        >
+        <select
+          id="txProtocol"
+          v-model="txProtocolKey"
+          class="select select-bordered w-full"
+        >
           <option value="GGWAVE_PROTOCOL_AUDIBLE_FAST">Audible Fast</option>
-          <option value="GGWAVE_PROTOCOL_AUDIBLE_FASTEST">Audible Fastest</option>
+          <option value="GGWAVE_PROTOCOL_AUDIBLE_FASTEST">
+            Audible Fastest
+          </option>
           <option value="GGWAVE_PROTOCOL_AUDIBLE_NORMAL">Audible Normal</option>
           <!-- <option value="GGWAVE_PROTOCOL_ULTRASOUND_NORMAL">Ultrasound Normal</option>
           <option value="GGWAVE_PROTOCOL_ULTRASOUND_FAST">Ultrasound Fast</option>
@@ -280,29 +298,43 @@ const toggleReceiving = async () => {
         <label for="txVolume" class="text-sm whitespace-nowrap">音量</label>
         <input
           id="txVolume"
+          v-model.number="txVolume"
           type="range"
           min="5"
           max="100"
           step="5"
           class="range range-primary w-full"
-          v-model.number="txVolume"
         />
         <span class="text-sm tabular-nums w-10 text-right">{{ txVolume }}</span>
       </div>
 
       <div class="flex gap-2">
-        <button class="btn btn-primary" :disabled="isSending" @click="sendMessage">
+        <button
+          class="btn btn-primary"
+          :disabled="isSending"
+          @click="sendMessage"
+        >
           再生して送信
         </button>
-        <button class="btn" :class="isReceiving ? 'btn-warning' : 'btn-secondary'" @click="toggleReceiving">
-          {{ isReceiving ? "受信停止" : "受信開始" }}
+        <button
+          class="btn"
+          :class="isReceiving ? 'btn-warning' : 'btn-secondary'"
+          @click="toggleReceiving"
+        >
+          {{ isReceiving ? '受信停止' : '受信開始' }}
         </button>
       </div>
 
       <div class="flex items-center gap-3 text-sm">
         <span class="whitespace-nowrap">入力レベル</span>
-        <progress class="progress progress-accent w-full" :value="inputLevel" max="1"></progress>
-        <span class="tabular-nums w-10 text-right">{{ Math.round(inputLevel * 100) }}%</span>
+        <progress
+          class="progress progress-accent w-full"
+          :value="inputLevel"
+          max="1"
+        />
+        <span class="tabular-nums w-10 text-right"
+          >{{ Math.round(inputLevel * 100) }}%</span
+        >
       </div>
     </div>
 

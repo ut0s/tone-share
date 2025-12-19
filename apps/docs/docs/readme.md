@@ -11,6 +11,3 @@ outline: deep
 ## Note
 
 if noisy environment,
-
-
-

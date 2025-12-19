@@ -2,8 +2,8 @@
 layout: home
 
 hero:
-  name: "Tone Share"
-  text: "Share anything to anyone by tone"
+  name: 'Tone Share'
+  text: 'Share anything to anyone by tone'
   tagline: Share Text/URL/File/ by Tone in LAN(Local Audio Network)
   actions:
     - theme: brand

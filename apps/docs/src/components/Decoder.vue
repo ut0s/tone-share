@@ -1,21 +1,23 @@
 <script setup lang="ts">
-import { ref, onBeforeUnmount, onMounted } from "vue";
-import Goertzel from "goertzeljs";
+import Goertzel from 'goertzeljs';
+import { defineOptions, onBeforeUnmount, onMounted, ref } from 'vue';
 
-const decodedText = ref("");
+defineOptions({ name: 'DecoderWidget' });
+
+const decodedText = ref('');
 const isRecording = ref(false);
-const errorMessage = ref("");
+const errorMessage = ref('');
 const inputLevel = ref(0);
 const needsGesture = ref(false);
 
-const AudioCtx =
-  (window.AudioContext || (window as any).webkitAudioContext) as typeof AudioContext;
+const AudioCtx = (window.AudioContext ||
+  (window as any).webkitAudioContext) as typeof AudioContext;
 
 let audioContext: AudioContext | null = null;
 let mediaStream: MediaStream | null = null;
 let analyser: AnalyserNode | null = null;
 let rafId: number | null = null;
-let lastDetectedChar = "";
+let lastDetectedChar = '';
 let lastDetectedAt = 0;
 let retryTimer: number | null = null;
 let gestureStarter: (() => void) | null = null;
@@ -24,10 +26,10 @@ const RETRY_MS = 5000;
 const ROW_FREQS = [697, 770, 852, 941];
 const COL_FREQS = [1209, 1336, 1477, 1633];
 const DTMF_CHARS = [
-  ["1", "2", "3", "A"],
-  ["4", "5", "6", "B"],
-  ["7", "8", "9", "C"],
-  ["*", "0", "#", "D"],
+  ['1', '2', '3', 'A'],
+  ['4', '5', '6', 'B'],
+  ['7', '8', '9', 'C'],
+  ['*', '0', '#', 'D'],
 ];
 
 const DETECTION_THRESHOLD = 0.12; // magnitude threshold
@@ -76,20 +78,20 @@ const stopRecording = async () => {
     audioContext = null;
   }
   analyser = null;
-  lastDetectedChar = "";
+  lastDetectedChar = '';
 };
 
 const startRecording = async () => {
   if (isRecording.value) return;
-  errorMessage.value = "";
+  errorMessage.value = '';
   needsGesture.value = false;
-  decodedText.value = "";
-  lastDetectedChar = "";
+  decodedText.value = '';
+  lastDetectedChar = '';
   lastDetectedAt = 0;
 
   try {
     audioContext = new AudioCtx();
-    if (audioContext.state === "suspended") {
+    if (audioContext.state === 'suspended') {
       try {
         await audioContext.resume();
       } catch (e) {
@@ -152,7 +154,7 @@ const startRecording = async () => {
           }
         }
       } else {
-        lastDetectedChar = ""; // reset latch when tone disappears
+        lastDetectedChar = ''; // reset latch when tone disappears
       }
 
       rafId = requestAnimationFrame(loop);
@@ -160,19 +162,20 @@ const startRecording = async () => {
 
     rafId = requestAnimationFrame(loop);
   } catch (err: any) {
-    const name = err?.name || "";
-    if (name === "NotAllowedError" || name === "SecurityError") {
+    const name = err?.name || '';
+    if (name === 'NotAllowedError' || name === 'SecurityError') {
       needsGesture.value = true;
-      errorMessage.value = "マイクの権限が必要です。画面をタップして許可してください。";
+      errorMessage.value =
+        'マイクの権限が必要です。画面をタップして許可してください。';
     } else {
-      errorMessage.value = err?.message || "マイクへのアクセスに失敗しました";
+      errorMessage.value = err?.message || 'マイクへのアクセスに失敗しました';
     }
     await stopRecording();
   }
 };
 
 const triggerWithGesture = async () => {
-  errorMessage.value = "";
+  errorMessage.value = '';
   needsGesture.value = false;
   await startRecording();
 };
@@ -191,8 +194,8 @@ onMounted(() => {
   gestureStarter = () => {
     triggerWithGesture();
   };
-  window.addEventListener("touchstart", gestureStarter, { once: true });
-  window.addEventListener("mousedown", gestureStarter, { once: true });
+  window.addEventListener('touchstart', gestureStarter, { once: true });
+  window.addEventListener('mousedown', gestureStarter, { once: true });
 });
 
 onBeforeUnmount(stopRecording);
@@ -202,8 +205,8 @@ onBeforeUnmount(() => {
     retryTimer = null;
   }
   if (gestureStarter) {
-    window.removeEventListener("touchstart", gestureStarter);
-    window.removeEventListener("mousedown", gestureStarter);
+    window.removeEventListener('touchstart', gestureStarter);
+    window.removeEventListener('mousedown', gestureStarter);
     gestureStarter = null;
   }
 });
@@ -213,24 +216,29 @@ onBeforeUnmount(() => {
   <div class="flex flex-col gap-2 max-w-md">
     <h2 class="text-lg font-semibold">DTMF Decoder</h2>
     <div class="flex gap-2 text-sm items-center">
-      <span class="badge" :class="isRecording ? 'badge-success' : 'badge-warning'">
+      <span
+        class="badge"
+        :class="isRecording ? 'badge-success' : 'badge-warning'"
+      >
         {{ isRecording ? '録音中' : '準備中' }}
       </span>
       <span v-if="!isRecording">マイクアクセスを許可してください</span>
     </div>
-    <div class="flex gap-2" v-if="!isRecording">
-      <button class="btn btn-sm btn-primary" @click="triggerWithGesture">再試行</button>
+    <div v-if="!isRecording" class="flex gap-2">
+      <button class="btn btn-sm btn-primary" @click="triggerWithGesture">
+        再試行
+      </button>
       <button
-        class="btn btn-sm btn-secondary"
         v-if="needsGesture && !isRecording"
+        class="btn btn-sm btn-secondary"
         @click="triggerWithGesture"
       >
         タップしてマイクを有効化
       </button>
     </div>
     <button
-      class="btn btn-sm btn-primary w-fit"
       v-if="needsGesture && !isRecording"
+      class="btn btn-sm btn-primary w-fit"
       @click="triggerWithGesture"
     >
       タップしてマイクを有効化
@@ -241,11 +249,13 @@ onBeforeUnmount(() => {
         <div
           class="h-2 bg-success rounded"
           :style="{ width: `${Math.round(inputLevel * 100)}%` }"
-        ></div>
+        />
       </div>
       <span>{{ Math.round(inputLevel * 100) }}%</span>
     </div>
     <div class="text-sm">Decoded: {{ decodedText }}</div>
-    <div class="text-sm text-error" v-if="errorMessage">{{ errorMessage }}</div>
+    <div v-if="errorMessage" class="text-sm text-error">
+      {{ errorMessage }}
+    </div>
   </div>
 </template>

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from "vue";
-import { Chart, registerables } from "chart.js";
-import { useUiI18n } from "../composables/useUiI18n";
+import { Chart, registerables } from 'chart.js';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
+
+import { useUiI18n } from '../composables/useUiI18n';
 
 Chart.register(...registerables);
 
@@ -29,7 +30,7 @@ const initializeAudio = async () => {
     dataArray = new Uint8Array(analyser.frequencyBinCount);
     fftDataArray = new Uint8Array(analyser.frequencyBinCount);
   } catch (err) {
-    console.error(`${t("error_mic_failed")}:`, err);
+    console.error(`${t('error_mic_failed')}:`, err);
   }
 };
 
@@ -54,14 +55,14 @@ const createCharts = () => {
   );
 
   timeChart = new Chart(timeChartRef.value, {
-    type: "line",
+    type: 'line',
     data: {
       labels,
       datasets: [
         {
-          label: t("showwave_chart_title_time"),
-          data: Array(analyser.frequencyBinCount).fill(128),
-          borderColor: "rgb(75, 192, 192)",
+          label: t('showwave_chart_title_time'),
+          data: Array.from({ length: analyser.frequencyBinCount }, () => 128),
+          borderColor: 'rgb(75, 192, 192)',
           tension: 0.3,
           pointRadius: 0,
         },
@@ -80,14 +81,14 @@ const createCharts = () => {
         legend: { display: false },
         title: {
           display: true,
-          text: t("showwave_chart_title_time"),
+          text: t('showwave_chart_title_time'),
         },
       },
     },
   });
 
   fftChart = new Chart(fftChartRef.value, {
-    type: "bar",
+    type: 'bar',
     data: {
       labels: createFrequencyLabels(
         analyser.frequencyBinCount,
@@ -96,9 +97,9 @@ const createCharts = () => {
       ),
       datasets: [
         {
-          label: t("showwave_chart_title_fft"),
-          data: Array(analyser.frequencyBinCount).fill(0),
-          backgroundColor: "rgb(153, 102, 255)",
+          label: t('showwave_chart_title_fft'),
+          data: Array.from({ length: analyser.frequencyBinCount }, () => 0),
+          backgroundColor: 'rgb(153, 102, 255)',
         },
       ],
     },
@@ -107,7 +108,7 @@ const createCharts = () => {
       animation: false,
       scales: {
         x: {
-          type: "logarithmic",
+          type: 'logarithmic',
           min: 200,
           max: 3000,
           ticks: {
@@ -116,9 +117,9 @@ const createCharts = () => {
               if (
                 [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000].includes(freq)
               ) {
-                return freq + "Hz";
+                return `${freq}Hz`;
               }
-              return "";
+              return '';
             },
           },
         },
@@ -131,7 +132,7 @@ const createCharts = () => {
         legend: { display: false },
         title: {
           display: true,
-          text: t("showwave_chart_title_fft"),
+          text: t('showwave_chart_title_fft'),
         },
       },
     },
@@ -140,14 +141,18 @@ const createCharts = () => {
 
 const syncChartTexts = () => {
   if (timeChart) {
-    (timeChart.data.datasets[0] as any).label = t("showwave_chart_title_time");
-    (timeChart.options.plugins as any).title.text = t("showwave_chart_title_time");
-    timeChart.update("none");
+    (timeChart.data.datasets[0] as any).label = t('showwave_chart_title_time');
+    (timeChart.options.plugins as any).title.text = t(
+      'showwave_chart_title_time',
+    );
+    timeChart.update('none');
   }
   if (fftChart) {
-    (fftChart.data.datasets[0] as any).label = t("showwave_chart_title_fft");
-    (fftChart.options.plugins as any).title.text = t("showwave_chart_title_fft");
-    fftChart.update("none");
+    (fftChart.data.datasets[0] as any).label = t('showwave_chart_title_fft');
+    (fftChart.options.plugins as any).title.text = t(
+      'showwave_chart_title_fft',
+    );
+    fftChart.update('none');
   }
 };
 
@@ -157,12 +162,12 @@ const updateCharts = () => {
   // 時間波形の更新
   analyser.getByteTimeDomainData(dataArray);
   timeChart.data.datasets[0].data = Array.from(dataArray);
-  timeChart.update("none");
+  timeChart.update('none');
 
   // FFTスペクトラムの更新
   analyser.getByteFrequencyData(fftDataArray);
   fftChart.data.datasets[0].data = Array.from(fftDataArray);
-  fftChart.update("none");
+  fftChart.update('none');
 
   animationId = requestAnimationFrame(updateCharts);
 };
@@ -197,20 +202,24 @@ onUnmounted(() => {
       class="flex flex-row gap-6 w-full max-w-3xl items-center justify-center"
     >
       <div class="chart-block">
-        <h3 class="text-lg font-semibold text-gray-700 mb-2">{{ t("showwave_title_time") }}</h3>
+        <h3 class="text-lg font-semibold text-gray-700 mb-2">
+          {{ t('showwave_title_time') }}
+        </h3>
         <div
           class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 h-[200px]"
         >
-          <canvas ref="timeChartRef"></canvas>
+          <canvas ref="timeChartRef" />
         </div>
       </div>
 
       <div class="chart-block">
-        <h3 class="text-lg font-semibold text-gray-700 mb-2">{{ t("showwave_title_fft") }}</h3>
+        <h3 class="text-lg font-semibold text-gray-700 mb-2">
+          {{ t('showwave_title_fft') }}
+        </h3>
         <div
           class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 h-[200px]"
         >
-          <canvas ref="fftChartRef"></canvas>
+          <canvas ref="fftChartRef" />
         </div>
       </div>
     </div>
