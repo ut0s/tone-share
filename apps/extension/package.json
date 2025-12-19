@@ -5,6 +5,7 @@
     "format:prettier": "prettier --write .",
     "build": "pnpm docs:build",
     "lint": "eslint . --fix",
+    "dev": "echo \"No dev script available\"",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"
